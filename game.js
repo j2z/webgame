@@ -66,7 +66,7 @@ var peanutsWhole = [];
 var peanutsInd = [];
 
 var padawans = [];
-
+var padawanParts = [];
 
 /* updates the lightsaber trail */
 function gameLoop() {
@@ -97,18 +97,89 @@ function gameLoop() {
     
     if (nextSpawn <= 0)
     {
-        var newPeanut = new Raster('img/peanut_full.png');
-        newPeanut.position = new Point(Math.random()*(view.bounds.right-200) + 100, view.bounds.bottom);
-        newPeanut.xVel = Math.random() - 0.5;
-        newPeanut.yVel = -11;
-        newPeanut.angVel = Math.random() * 4 - 2;
-        peanutsWhole.push(newPeanut);
+        if (Math.random() < PADAWAN_CHANCE)
+        {
+            var newPadawan = new Raster('img/youngling.png');
+            newPadawan.position = new Point(Math.random()*(view.bounds.right-200) + 100, view.bounds.bottom);
+            newPadawan.xVel = Math.random() - 0.5;
+            newPadawan.yVel = -11;
+            newPadawan.angVel = Math.random() * 4 - 2;
+            padawans.push(newPadawan);
+        }
+        else
+        {
+            var newPeanut = new Raster('img/peanut_full.png');
+            newPeanut.position = new Point(Math.random()*(view.bounds.right-200) + 100, view.bounds.bottom);
+            newPeanut.xVel = Math.random() - 0.5;
+            newPeanut.yVel = -11;
+            newPeanut.angVel = Math.random() * 4 - 2;
+            peanutsWhole.push(newPeanut);
+        }
         
         nextSpawn = Math.random() * 20 + 20;
     }
     else
     {
         nextSpawn--;
+    }
+
+    for (var i = 0; i < padawanParts.length; i++)
+    {
+        if (padawanParts[i].position.y > view.bounds.bottom)
+        {
+            padawanParts[i].remove();
+            padawanParts.splice(i, 1);
+        }
+        else
+        {
+            padawanParts[i].position.x = padawanParts[i].position.x + padawanParts[i].xVel;
+            padawanParts[i].position.y = padawanParts[i].position.y + padawanParts[i].yVel;
+            padawanParts[i].rotate(padawanParts[i].angVel);
+            padawanParts[i].yVel = padawanParts[i].yVel + GRAVITY;
+
+        }
+    }
+    
+    for (var i = 0; i < padawans.length; i++)
+    {
+        if (padawans[i].position.y > view.bounds.bottom)
+        {
+            padawans[i].remove();
+            padawans.splice(i, 1);
+        }
+        else
+        {
+            if (padawans[i].contains(mousePoint))
+            {
+                var padawanTop = new Raster('img/youngling_top.png');
+                padawanTop.position = padawans[i].position;
+                padawanTop.position.x = padawanTop.position.x + Math.random() * 4 - 2;
+                padawanTop.xVel = padawans[i].xVel + Math.random() * 4;
+                padawanTop.yVel = padawans[i].yVel;
+                padawanTop.angVel = Math.random() * 4 - 2;
+                padawanParts.push(padawanTop);
+                
+                var padawanBottom = new Raster('img/youngling_bottom.png');
+                padawanBottom.position = padawans[i].position;
+                padawanBottom.position.x = padawanBottom.position.x + Math.random() * 4 - 2;
+                padawanBottom.xVel = padawans[i].xVel + Math.random() * (-4);
+                padawanBottom.yVel = padawans[i].yVel;
+                padawanBottom.angVel = Math.random() * 4 - 2;
+                padawanParts.push(padawanBottom);
+                
+                padawans[i].remove();
+                padawans.splice(i, 1);
+                playHit();
+                
+                continue;
+            }
+
+            padawans[i].position.x = padawans[i].position.x + padawans[i].xVel;
+            padawans[i].position.y = padawans[i].position.y + padawans[i].yVel;
+            padawans[i].rotate(padawans[i].angVel);
+            padawans[i].yVel = padawans[i].yVel + GRAVITY;
+
+        }
     }
     
     for (var i = 0; i < peanutsInd.length; i++)
