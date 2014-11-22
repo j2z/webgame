@@ -46,11 +46,11 @@ var hit2Index = 0;
 
 for (var i = 0; i < CONCURRENT_SOUNDS; i++)
 {
-    hum.push(new Audio('hum.wav'));
-    swing1.push(new Audio('swing.wav'));
-    swing2.push(new Audio('swing2.wav'));
-    hit1.push(new Audio('hit1.wav'));
-    hit2.push(new Audio('hit2.wav'));
+    hum.push(new Audio('audio/hum.wav'));
+    swing1.push(new Audio('audio/swing.wav'));
+    swing2.push(new Audio('audio/swing2.wav'));
+    hit1.push(new Audio('audio/hit1.wav'));
+    hit2.push(new Audio('audio/hit2.wav'));
 }
 
 /* sound cooldowns */
