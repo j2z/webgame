@@ -114,7 +114,7 @@ function gameLoop() {
         {
             var newPeanut = new Raster('img/peanut_full.png');
             newPeanut.position = new Point(Math.random()*(view.bounds.right-300) + 150, view.bounds.bottom);
-            newPeanut.xVel = Math.random() * 10 - 5;
+            newPeanut.xVel = Math.random() * 6 - 3;
             newPeanut.yVel = -11;
             newPeanut.angVel = Math.random() * 4 - 2;
             peanutsWhole.push(newPeanut);
