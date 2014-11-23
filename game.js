@@ -3,7 +3,7 @@
 paper.install(window);
 
 /* How long the saber "trail" is */
-var PATH_LENGTH = 6;
+var PATH_LENGTH = 4;
 
 /* how far your saber can go in the timer interval before it plays
  * "swish" instead of "hummm" */
@@ -13,9 +13,9 @@ var THRESHOLD = 30;
 var CONCURRENT_SOUNDS = 5;
 
 /* frames until another swing sound can be played */
-var SWING_COOLDOWN = 15;
+var SWING_COOLDOWN = 12;
 /* frames until another hum sound can be played */
-var HUM_COOLDOWN = 25;
+var HUM_COOLDOWN = 20;
 
 /* change of spawning a trainee every spawn */
 var PADAWAN_CHANCE = 0.2;
@@ -24,9 +24,9 @@ var PADAWAN_CHANCE = 0.2;
 /* otherwise, they'll imediately die */
 var INV_COOLDOWN = 15;
 
-var GRAVITY = 0.15;
+var GRAVITY = 0.25;
 
-var START_LIVES = 3;
+var START_LIVES = 4;
 
 var gameOver = true;
 
@@ -62,8 +62,12 @@ for (var i = 0; i < CONCURRENT_SOUNDS; i++)
     hum.push(new Audio('audio/hum.wav'));
     swing1.push(new Audio('audio/swing.wav'));
     swing2.push(new Audio('audio/swing2.wav'));
-    hit1.push(new Audio('audio/hit1.wav'));
-    hit2.push(new Audio('audio/hit2.wav'));
+    var tempHit = new Audio('audio/hit1.wav');
+    tempHit.volume = 0.5;
+    hit1.push(tempHit);
+    var tempHit2 = new Audio('audio/hit2.wav');
+    tempHit2.volume = 0.5;
+    hit2.push(tempHit2);
     scream.push(new Audio('audio/scream.wav'));
 }
 
@@ -75,10 +79,10 @@ var humTimer = 0;
 var sumDelta;
 
 /* how long until the next spawn */
-var nextSpawn = 0;
+var nextSpawn = 10;
 
 /* how fast things spawn */
-var spawnRate = 1;
+var spawnRate = 45;
 
 /* whole peanuts (with shell) */
 var peanutsWhole = [];
@@ -146,24 +150,35 @@ function gameLoop() {
         {
             var newPadawan = new Raster('img/youngling.png');
             newPadawan.position = new Point(Math.random()*(view.bounds.right-200) + 100, view.bounds.bottom);
-            newPadawan.xVel = Math.random() - 0.5;
-            newPadawan.yVel = -11;
+            newPadawan.xVel = Math.random() * 10 - 5 - (newPadawan.position.x - view.bounds.right/2) / 200;
+            newPadawan.yVel = -15;
             newPadawan.angVel = Math.random() * 4 - 2;
+            newPadawan.hitBox = new Path.Rectangle(newPadawan.bounds);
+            //debug
+            //newPadawan.hitBox.fillColor = 'black';
             padawans.push(newPadawan);
         }
         else
         {
             var newPeanut = new Raster('img/peanut_full.png');
             newPeanut.position = new Point(Math.random()*(view.bounds.right-300) + 150, view.bounds.bottom);
-            newPeanut.xVel = Math.random() * 6 - 3;
-            newPeanut.yVel = -11;
+            // make peanuts at the right go to the left and vice versa 
+            newPeanut.xVel = Math.random() * 10 - 5 - (newPeanut.position.x - view.bounds.right/2) / 200;
+            newPeanut.yVel = -15;
             newPeanut.angVel = Math.random() * 4 - 2;
+            // Remember to remove() this 
+            newPeanut.hitBox = new Path.Rectangle(newPeanut.bounds);
+            //debug
+            //newPeanut.hitBox.fillColor = 'black';
             peanutsWhole.push(newPeanut);
         }
         
         /* generate next spawn time and increase spawn rate */
-        nextSpawn = Math.random() * 20 / spawnRate + 40;
-        spawnRate = spawnRate + 0.1;
+        nextSpawn = Math.random() * 20 + spawnRate;
+        if (spawnRate > 0)
+        {
+            spawnRate = spawnRate - 0.25;
+        }
     }
     else
     {
@@ -196,12 +211,14 @@ function gameLoop() {
     {
         if (padawans[i].position.y > view.bounds.bottom)
         {
+            padawans[i].hitBox.remove();
             padawans[i].remove();
             padawans.splice(i, 1);
         }
         else
         {
-            if (padawans[i].contains(mousePoint))
+            if (padawans[i].contains(mousePoint) ||
+                padawans[i].hitBox.getIntersections(myPath).length > 0)
             {
                 /* cut him into 2 pieces!*/
                 var padawanTop = new Raster('img/youngling_top.png');
@@ -220,6 +237,7 @@ function gameLoop() {
                 padawanBottom.angVel = Math.random() * 4 - 2;
                 padawanParts.push(padawanBottom);
                 
+                padawans[i].hitBox.remove();
                 padawans[i].remove();
                 padawans.splice(i, 1);
                 playHit();
@@ -234,7 +252,8 @@ function gameLoop() {
             padawans[i].position.y = padawans[i].position.y + padawans[i].yVel;
             padawans[i].rotate(padawans[i].angVel);
             padawans[i].yVel = padawans[i].yVel + GRAVITY;
-
+            padawans[i].hitBox.position = padawans[i].position;
+            padawans[i].hitBox.rotate(padawans[i].angVel);
         }
     }
     
@@ -242,6 +261,7 @@ function gameLoop() {
     {
         if (peanutsInd[i].position.y > view.bounds.bottom)
         {
+            peanutsInd[i].hitBox.remove();
             peanutsInd[i].remove();
             peanutsInd.splice(i, 1);
         }
@@ -249,8 +269,10 @@ function gameLoop() {
         {
             if (peanutsInd[i].invTimer <= 0)
             {
-                if (peanutsInd[i].contains(mousePoint))
+                if (peanutsInd[i].contains(mousePoint) ||
+                    peanutsInd[i].hitBox.getIntersections(myPath).length > 0)
                 {
+                    peanutsInd[i].hitBox.remove();
                     peanutsInd[i].remove();
                     peanutsInd.splice(i, 1);
                     playHit();
@@ -287,7 +309,8 @@ function gameLoop() {
             peanutsInd[i].position.y = peanutsInd[i].position.y + peanutsInd[i].yVel;
             peanutsInd[i].rotate(peanutsInd[i].angVel);
             peanutsInd[i].yVel = peanutsInd[i].yVel + GRAVITY;
-
+            peanutsInd[i].hitBox.position = peanutsInd[i].position;
+            peanutsInd[i].hitBox.rotate(peanutsInd[i].angVel);
         }
     }
     
@@ -295,6 +318,7 @@ function gameLoop() {
     {
         if (peanutsWhole[i].position.y > view.bounds.bottom)
         {
+            peanutsWhole[i].hitBox.remove();
             peanutsWhole[i].remove();
             peanutsWhole.splice(i, 1);
             
@@ -303,7 +327,8 @@ function gameLoop() {
         }
         else
         {
-            if (peanutsWhole[i].contains(mousePoint))
+            if (peanutsWhole[i].contains(mousePoint) ||
+                peanutsWhole[i].hitBox.getIntersections(myPath).length > 0)
             {
                 /* spawn 2 individual peanuts */
                 var newPeanut1 = new Raster('img/peanut_individual.png');
@@ -313,6 +338,9 @@ function gameLoop() {
                 newPeanut1.yVel = peanutsWhole[i].yVel - Math.random() * 4;
                 newPeanut1.angVel = Math.random() * 4 - 2;
                 newPeanut1.invTimer = INV_COOLDOWN;
+                newPeanut1.hitBox = new Path.Rectangle(newPeanut1.bounds);
+                /* debug hitbox */
+                //newPeanut1.hitBox.fillColor = 'black';
                 peanutsInd.push(newPeanut1);
                 
                 var newPeanut2 = new Raster('img/peanut_individual.png');
@@ -322,8 +350,12 @@ function gameLoop() {
                 newPeanut2.yVel = peanutsWhole[i].yVel - Math.random() * 4;
                 newPeanut2.angVel = Math.random() * 4 - 2;
                 newPeanut2.invTimer = INV_COOLDOWN;
+                newPeanut2.hitBox = new Path.Rectangle(newPeanut2.bounds);
+                //debug
+                //newPeanut2.hitBox.fillColor = 'black';
                 peanutsInd.push(newPeanut2);
                 
+                peanutsWhole[i].hitBox.remove();
                 peanutsWhole[i].remove();
                 peanutsWhole.splice(i, 1);
                 playHit();
@@ -336,6 +368,8 @@ function gameLoop() {
                 peanutsWhole[i].position.y = peanutsWhole[i].position.y + peanutsWhole[i].yVel;
                 peanutsWhole[i].rotate(peanutsWhole[i].angVel);
                 peanutsWhole[i].yVel = peanutsWhole[i].yVel + GRAVITY;
+                peanutsWhole[i].hitBox.position = peanutsWhole[i].position;
+                peanutsWhole[i].hitBox.rotate(peanutsWhole[i].angVel);
             }
         }
     }
@@ -429,6 +463,14 @@ function loseGame()
 window.addEventListener('load', function() {
     paper.setup('canvas');
     
+    /* pre-load the images into the brower cache so we don't lag later */
+    var temp1 = new Raster('img/peanut_full.png');
+    temp1.remove();
+    var temp2 = new Raster('img/peanut_individual.png');
+    temp2.remove();
+    var temp3 = new Raster('img/youngling.png');
+    temp3.remove();
+    
     myPath = new Path();
     mousePoint = new Point(0,0);
     sumDelta = 0;
@@ -454,6 +496,11 @@ window.addEventListener('load', function() {
     resetLives();
     
     var mouseTool = new Tool();
+    
+    console.log(view.bounds.right);
+    console.log(view.bounds.left);
+    console.log(view.bounds.bottom);
+    console.log(view.bounds.top);
   
     mouseTool.onMouseMove = function(event) {
         /* update mouse position */
@@ -465,6 +512,6 @@ window.addEventListener('load', function() {
     gameOver = false;
 
     /* time step for the game loop */
-    setInterval(gameLoop, 10);
+    setInterval(gameLoop, 15);
 
 });
