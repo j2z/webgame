@@ -44,6 +44,9 @@ var hit1Index = 0;
 var hit2 = [];
 var hit2Index = 0;
 
+var scream = [];
+var screamIndex = 0;
+
 for (var i = 0; i < CONCURRENT_SOUNDS; i++)
 {
     hum.push(new Audio('audio/hum.wav'));
@@ -51,6 +54,7 @@ for (var i = 0; i < CONCURRENT_SOUNDS; i++)
     swing2.push(new Audio('audio/swing2.wav'));
     hit1.push(new Audio('audio/hit1.wav'));
     hit2.push(new Audio('audio/hit2.wav'));
+    scream.push(new Audio('audio/scream.wav'));
 }
 
 /* sound cooldowns */
@@ -109,8 +113,8 @@ function gameLoop() {
         else
         {
             var newPeanut = new Raster('img/peanut_full.png');
-            newPeanut.position = new Point(Math.random()*(view.bounds.right-200) + 100, view.bounds.bottom);
-            newPeanut.xVel = Math.random() - 0.5;
+            newPeanut.position = new Point(Math.random()*(view.bounds.right-300) + 150, view.bounds.bottom);
+            newPeanut.xVel = Math.random() * 10 - 5;
             newPeanut.yVel = -11;
             newPeanut.angVel = Math.random() * 4 - 2;
             peanutsWhole.push(newPeanut);
@@ -170,6 +174,7 @@ function gameLoop() {
                 padawans[i].remove();
                 padawans.splice(i, 1);
                 playHit();
+                playScream();
                 
                 continue;
             }
@@ -283,6 +288,11 @@ function gameLoop() {
 function playHum() {
     hum[humIndex].play();
     humIndex = (humIndex + 1) % CONCURRENT_SOUNDS;
+}
+
+function playScream() {
+    scream[screamIndex].play();
+    screamIndex = (screamIndex + 1) % CONCURRENT_SOUNDS;
 }
 
 function playSwing() {
