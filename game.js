@@ -17,13 +17,23 @@ var SWING_COOLDOWN = 15;
 /* frames until another hum sound can be played */
 var HUM_COOLDOWN = 25;
 
+/* change of spawning a trainee every spawn */
 var PADAWAN_CHANCE = 0.2;
 
+/* how long the sub-peanuts are invicible after being released from the peanut shell */
+/* otherwise, they'll imediately die */
 var INV_COOLDOWN = 15;
 
 var GRAVITY = 0.15;
 
+var START_LIVES = 3;
+
+var gameOver = true;
+
+/* the path of the lightsaber */
 var myPath;
+
+/* current position of the mouse */
 var mousePoint;
 
 /* Sounds */
@@ -64,23 +74,41 @@ var humTimer = 0;
 /* how far your saber has moved since the last time step */
 var sumDelta;
 
+/* how long until the next spawn */
 var nextSpawn = 0;
 
+/* whole peanuts (with shell) */
 var peanutsWhole = [];
+/* individual peanuts */
 var peanutsInd = [];
 
+/* trainees and their "parts" */
 var padawans = [];
 var padawanParts = [];
 
+/* score and objects to the display the score */
 var score = 0;
 var scoreText;
 var highScore = 0;
 var highScoreText;
 
-/* updates the lightsaber trail */
+/* lives and images representing lives */
+var lives;
+var lifeImg = [];
+
 function gameLoop() {
+    /* if game is over, don't run game logic */
+    if (gameOver)
+    {
+        paper.view.draw();
+        return;
+    }
+    
+    /* update saber arc */
     myPath.add(mousePoint);
     myPath.removeSegment(0);
+    
+    /* play swoosh based on the speed */
     if (swingTimer <= 0)
     {
         if (sumDelta > THRESHOLD)
@@ -93,6 +121,8 @@ function gameLoop() {
     {
         swingTimer--;
     }
+    
+    /* play the hummm sound */
     if (humTimer <= 0)
     {
         playHum();
@@ -102,10 +132,13 @@ function gameLoop() {
     {
         humTimer--;
     }
+    
+    /* reset saber distance traveled */
     sumDelta = 0;
     
     if (nextSpawn <= 0)
     {
+        /* spawn either trainee or peanut */
         if (Math.random() < PADAWAN_CHANCE)
         {
             var newPadawan = new Raster('img/youngling.png');
@@ -125,13 +158,18 @@ function gameLoop() {
             peanutsWhole.push(newPeanut);
         }
         
-        nextSpawn = Math.random() * 20 + 20;
+        nextSpawn = Math.random() * 20 + 40;
     }
     else
     {
+        /* if not time to spawn, count down */
         nextSpawn--;
     }
 
+    /* Next loops are pretty much the same.
+     * If the object is off the bottom of the screen, remove it.
+     * Otherwise, update it's position and rotation based on physics */
+    
     for (var i = 0; i < padawanParts.length; i++)
     {
         if (padawanParts[i].position.y > view.bounds.bottom)
@@ -160,6 +198,7 @@ function gameLoop() {
         {
             if (padawans[i].contains(mousePoint))
             {
+                /* cut him into 2 pieces!*/
                 var padawanTop = new Raster('img/youngling_top.png');
                 padawanTop.position = padawans[i].position;
                 padawanTop.position.x = padawanTop.position.x + Math.random() * 4 - 2;
@@ -181,7 +220,7 @@ function gameLoop() {
                 playHit();
                 playScream();
                 
-                resetScore();
+                loseLife();
                 
                 continue;
             }
@@ -253,12 +292,15 @@ function gameLoop() {
         {
             peanutsWhole[i].remove();
             peanutsWhole.splice(i, 1);
+            
+            /* lose a life when you miss a whole peanut */
+            loseLife();
         }
         else
         {
             if (peanutsWhole[i].contains(mousePoint))
             {
-                
+                /* spawn 2 individual peanuts */
                 var newPeanut1 = new Raster('img/peanut_individual.png');
                 newPeanut1.position = peanutsWhole[i].position;
                 newPeanut1.position.x = newPeanut1.position.x + Math.random() * 4 - 2;
@@ -349,6 +391,36 @@ function resetScore() {
     scoreText.content = 'Score: ' + score;
 }
 
+function loseLife() {
+    lives--;
+    var lifeImage = lifeImg.pop();
+    lifeImage.remove();
+    if (lives == 0)
+    {
+        loseGame();
+    }
+}
+
+function resetLives() {
+    lives = START_LIVES;
+    for (var i = 0; i < lives; i++)
+    {
+        var lifeImage = new Raster('img/jedi_symbol.jpg');
+        lifeImage.position = new Point(view.bounds.right - 100 + i * 35, view.bounds.bottom - 20);
+        lifeImg.push(lifeImage);
+    }
+}
+
+function loseGame()
+{
+    var loseText = new PointText(new Point(view.bounds.right / 2, view.bounds.bottom / 2));
+    loseText.fillColor = 'red';
+    loseText.justification = 'center';
+    loseText.content = 'YOU LOSE. WELCOME TO THE DARK SIDE.';
+    loseText.fontSize = 40;
+    gameOver = true;
+}
+
 window.addEventListener('load', function() {
     paper.setup('canvas');
     
@@ -374,6 +446,7 @@ window.addEventListener('load', function() {
     highScoreText.content = 'High Score: 0';
     
     resetScore();
+    resetLives();
     
     var mouseTool = new Tool();
   
@@ -383,8 +456,10 @@ window.addEventListener('load', function() {
         /* add to the length traveled */
         sumDelta = sumDelta + event.delta.length;
     }
+    
+    gameOver = false;
 
-    /* time step for updating saber trail */
+    /* time step for the game loop */
     setInterval(gameLoop, 10);
 
 });
