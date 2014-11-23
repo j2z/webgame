@@ -77,6 +77,9 @@ var sumDelta;
 /* how long until the next spawn */
 var nextSpawn = 0;
 
+/* how fast things spawn */
+var spawnRate = 1;
+
 /* whole peanuts (with shell) */
 var peanutsWhole = [];
 /* individual peanuts */
@@ -158,7 +161,9 @@ function gameLoop() {
             peanutsWhole.push(newPeanut);
         }
         
-        nextSpawn = Math.random() * 20 + 40;
+        /* generate next spawn time and increase spawn rate */
+        nextSpawn = Math.random() * 20 / spawnRate + 40;
+        spawnRate = spawnRate + 0.1;
     }
     else
     {
