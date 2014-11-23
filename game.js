@@ -72,6 +72,11 @@ var peanutsInd = [];
 var padawans = [];
 var padawanParts = [];
 
+var score = 0;
+var scoreText;
+var highScore = 0;
+var highScoreText;
+
 /* updates the lightsaber trail */
 function gameLoop() {
     myPath.add(mousePoint);
@@ -176,6 +181,8 @@ function gameLoop() {
                 playHit();
                 playScream();
                 
+                resetScore();
+                
                 continue;
             }
 
@@ -203,6 +210,8 @@ function gameLoop() {
                     peanutsInd[i].remove();
                     peanutsInd.splice(i, 1);
                     playHit();
+                    
+                    addScore();
                     
                     /*
                     var newPeanut1 = new Raster('img/peanut_individual.png');
@@ -271,6 +280,8 @@ function gameLoop() {
                 peanutsWhole[i].remove();
                 peanutsWhole.splice(i, 1);
                 playHit();
+                
+                addScore();
             }
             else
             {
@@ -323,6 +334,21 @@ function playHit() {
     }
 }
 
+function addScore() {
+    score++;
+    if (score > highScore)
+    {
+        highScore = score;
+        highScoreText.content = 'High Score: ' + highScore;
+    }
+    scoreText.content = 'Score: ' + score;
+}
+
+function resetScore() {
+    score = 0;
+    scoreText.content = 'Score: ' + score;
+}
+
 window.addEventListener('load', function() {
     paper.setup('canvas');
     
@@ -337,6 +363,17 @@ window.addEventListener('load', function() {
     myPath.closed = true;
     myPath.strokeColor = 'blue';
     myPath.fillColor = 'blue';
+    
+    scoreText = new PointText(new Point(10, 30));
+    scoreText.fillColor = 'black';
+    scoreText.fontSize = 25;
+    
+    highScoreText = new PointText(new Point(view.bounds.right - 200, 30));
+    highScoreText.fillColor = 'black';
+    highScoreText.fontSize = 25;
+    highScoreText.content = 'High Score: 0';
+    
+    resetScore();
     
     var mouseTool = new Tool();
   
