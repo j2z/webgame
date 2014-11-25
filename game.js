@@ -28,6 +28,8 @@ var GRAVITY = 0.25;
 
 var START_LIVES = 4;
 
+var START_SPAWN = 20;
+
 var gameOver = true;
 
 /* the path of the lightsaber */
@@ -57,6 +59,9 @@ var hit2Index = 0;
 var scream = [];
 var screamIndex = 0;
 
+var fail = [];
+var failIndex = 0;
+
 for (var i = 0; i < CONCURRENT_SOUNDS; i++)
 {
     hum.push(new Audio('audio/hum.wav'));
@@ -69,6 +74,7 @@ for (var i = 0; i < CONCURRENT_SOUNDS; i++)
     tempHit2.volume = 0.5;
     hit2.push(tempHit2);
     scream.push(new Audio('audio/scream.wav'));
+    fail.push(new Audio('audio/fail.mp3'));
 }
 
 /* sound cooldowns */
@@ -82,7 +88,7 @@ var sumDelta;
 var nextSpawn = 10;
 
 /* how fast things spawn */
-var spawnRate = 45;
+var spawnRate = START_SPAWN;
 
 /* whole peanuts (with shell) */
 var peanutsWhole = [];
@@ -174,17 +180,16 @@ function gameLoop() {
         }
         
         /* generate next spawn time and increase spawn rate */
-        nextSpawn = Math.random() * 20 + spawnRate;
-        if (spawnRate > 0)
-        {
-            spawnRate = spawnRate - 0.25;
-        }
+        nextSpawn = Math.random() * 20 + 1000 / spawnRate;
     }
     else
     {
         /* if not time to spawn, count down */
         nextSpawn--;
     }
+    
+    spawnRate = spawnRate + 0.025;
+    console.log(spawnRate);
 
     /* Next loops are pretty much the same.
      * If the object is off the bottom of the screen, remove it.
@@ -244,8 +249,8 @@ function gameLoop() {
                 playScream();
                 
                 loseLife();
-                
-                continue;
+                // other padawans should get removed so end the loop
+                break;
             }
 
             padawans[i].position.x = padawans[i].position.x + padawans[i].xVel;
@@ -322,8 +327,13 @@ function gameLoop() {
             peanutsWhole[i].remove();
             peanutsWhole.splice(i, 1);
             
+            playFail();
+            
             /* lose a life when you miss a whole peanut */
             loseLife();
+            
+            // other peanuts should get removed so end the loop
+            break;
         }
         else
         {
@@ -387,6 +397,11 @@ function playScream() {
     screamIndex = (screamIndex + 1) % CONCURRENT_SOUNDS;
 }
 
+function playFail() {
+    fail[failIndex].play();
+    failIndex = (failIndex + 1) % CONCURRENT_SOUNDS;
+}
+
 function playSwing() {
     /* 2 possible swish sounds */
     if (Math.random() < 0.5)
@@ -438,6 +453,29 @@ function loseLife() {
     {
         loseGame();
     }
+    else
+    {
+        // clear the screen of stuff
+        while (padawans.length > 0)
+        {
+            var tempPadawan = padawans.pop();
+            tempPadawan.hitBox.remove();
+            tempPadawan.remove();
+        }
+        while (peanutsWhole.length > 0)
+        {
+            var tempPeanut = peanutsWhole.pop();
+            tempPeanut.hitBox.remove();
+            tempPeanut.remove();
+        }
+        
+        //reset the spawn rate
+        spawnRate = spawnRate - 20;
+        if (spawnRate < START_SPAWN)
+        {
+            spawnRate = START_SPAWN;
+        }
+    }
 }
 
 function resetLives() {
@@ -445,7 +483,7 @@ function resetLives() {
     for (var i = 0; i < lives; i++)
     {
         var lifeImage = new Raster('img/jedi_symbol.jpg');
-        lifeImage.position = new Point(view.bounds.right - 100 + i * 35, view.bounds.bottom - 20);
+        lifeImage.position = new Point(view.bounds.right - 150 + i * 35, view.bounds.bottom - 20);
         lifeImg.push(lifeImage);
     }
 }
