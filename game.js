@@ -151,7 +151,7 @@ function gameLoop() {
             var newPadawan = new Raster('img/youngling.png');
             newPadawan.position = new Point(Math.random()*(view.bounds.right-200) + 100, view.bounds.bottom);
             newPadawan.xVel = Math.random() * 10 - 5 - (newPadawan.position.x - view.bounds.right/2) / 200;
-            newPadawan.yVel = -15;
+            newPadawan.yVel = -14;
             newPadawan.angVel = Math.random() * 4 - 2;
             newPadawan.hitBox = new Path.Rectangle(newPadawan.bounds);
             //debug
@@ -164,7 +164,7 @@ function gameLoop() {
             newPeanut.position = new Point(Math.random()*(view.bounds.right-300) + 150, view.bounds.bottom);
             // make peanuts at the right go to the left and vice versa 
             newPeanut.xVel = Math.random() * 10 - 5 - (newPeanut.position.x - view.bounds.right/2) / 200;
-            newPeanut.yVel = -15;
+            newPeanut.yVel = -14;
             newPeanut.angVel = Math.random() * 4 - 2;
             // Remember to remove() this 
             newPeanut.hitBox = new Path.Rectangle(newPeanut.bounds);
