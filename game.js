@@ -7,7 +7,7 @@ var PATH_LENGTH = 4;
 
 /* how far your saber can go in the timer interval before it plays
  * "swish" instead of "hummm" */
-var THRESHOLD = 30;
+var THRESHOLD = 50;
 
 /* amount of times a sound can be played over itself */
 var CONCURRENT_SOUNDS = 5;
