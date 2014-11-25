@@ -180,7 +180,9 @@ function gameLoop() {
         }
         
         /* generate next spawn time and increase spawn rate */
-        nextSpawn = Math.random() * 20 + 1000 / spawnRate;
+        nextSpawn = Math.random() * 15 + 1000 / spawnRate;
+        
+        console.log(nextSpawn);
     }
     else
     {
@@ -189,7 +191,6 @@ function gameLoop() {
     }
     
     spawnRate = spawnRate + 0.025;
-    console.log(spawnRate);
 
     /* Next loops are pretty much the same.
      * If the object is off the bottom of the screen, remove it.
@@ -475,6 +476,7 @@ function loseLife() {
         {
             spawnRate = START_SPAWN;
         }
+        nextSpawn = 100;
     }
 }
 
