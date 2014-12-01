@@ -166,7 +166,7 @@ function gameLoop() {
         }
         else
         {
-            var newPeanut = new Raster('img/peanut_full.png');
+            var newPeanut = new Raster('img/whole_peanut_resized.png');
             newPeanut.position = new Point(Math.random()*(view.bounds.right-300) + 150, view.bounds.bottom);
             // make peanuts at the right go to the left and vice versa 
             newPeanut.xVel = Math.random() * 10 - 5 - (newPeanut.position.x - view.bounds.right/2) / 200;
@@ -342,7 +342,7 @@ function gameLoop() {
                 peanutsWhole[i].hitBox.getIntersections(myPath).length > 0)
             {
                 /* spawn 2 individual peanuts */
-                var newPeanut1 = new Raster('img/peanut_individual.png');
+                var newPeanut1 = new Raster('img/peanut_kernel_resized.png');
                 newPeanut1.position = peanutsWhole[i].position;
                 newPeanut1.position.x = newPeanut1.position.x + Math.random() * 4 - 2;
                 newPeanut1.xVel = peanutsWhole[i].xVel + Math.random() * 4;
@@ -354,7 +354,7 @@ function gameLoop() {
                 //newPeanut1.hitBox.fillColor = 'black';
                 peanutsInd.push(newPeanut1);
                 
-                var newPeanut2 = new Raster('img/peanut_individual.png');
+                var newPeanut2 = new Raster('img/peanut_kernel_resized.png');
                 newPeanut2.position = peanutsWhole[i].position;
                 newPeanut2.position.x = newPeanut2.position.x + Math.random() * 4 - 2;
                 newPeanut2.xVel = peanutsWhole[i].xVel + Math.random() * (-4);
