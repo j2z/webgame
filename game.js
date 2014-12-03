@@ -31,12 +31,16 @@ var START_LIVES = 4;
 var START_SPAWN = 20;
 
 var gameOver = true;
+var gameStarted = false;
 
 /* the path of the lightsaber */
 var myPath;
 
 /* current position of the mouse */
 var mousePoint;
+
+var mouseClick;
+var clicked;
 
 /* Sounds */
 /* Apparently you can't have a single Audio object playing over itself,
@@ -90,6 +94,12 @@ var nextSpawn = 10;
 /* how fast things spawn */
 var spawnRate = START_SPAWN;
 
+var startButton;
+var startButtonPath;
+var titleText;
+var startText;
+var loseText;
+
 /* whole peanuts (with shell) */
 var peanutsWhole = [];
 /* individual peanuts */
@@ -110,13 +120,6 @@ var lives;
 var lifeImg = [];
 
 function gameLoop() {
-    /* if game is over, don't run game logic */
-    if (gameOver)
-    {
-        paper.view.draw();
-        return;
-    }
-    
     /* update saber arc */
     myPath.add(mousePoint);
     myPath.removeSegment(0);
@@ -492,12 +495,105 @@ function resetLives() {
 
 function loseGame()
 {
-    var loseText = new PointText(new Point(view.bounds.right / 2, view.bounds.bottom / 2));
+    loseText = new PointText(new Point(view.bounds.right / 2, view.bounds.bottom / 2));
     loseText.fillColor = 'red';
     loseText.justification = 'center';
+    loseText.fontFamily = 'Courier New';
+    loseText.fontWeight = 'bold';
     loseText.content = 'YOU LOSE. WELCOME TO THE DARK SIDE.';
     loseText.fontSize = 40;
     gameOver = true;
+}
+
+function startView(clicked)
+{
+    if (startButton.contains(mousePoint) && (!gameStarted || gameOver)) {
+        startButtonPath.strokeColor = '#0066FF';
+        startButtonPath.fillColor = 'white';
+    }
+    else if (!startButton.contains(mousePoint) && (!gameStarted || gameOver)) {
+        startButtonPath.strokeColor = '#9D9DFF';
+        startButtonPath.fillColor = '#9D9DFF';
+    }
+    if (clicked && startButton.contains(mousePoint) && (!gameStarted || gameOver)) {
+        titleText.fontSize = 0;
+        startText.fontSize = 0;
+        startButtonPath.fillColor = 'white';
+        startButtonPath.strokeColor = 'white';
+        mousePoint = mouseClick;
+        
+        if (!gameStarted) {
+            gameStarted = true;
+        }
+        else if (gameOver) {
+            resetLives();
+            resetScore();
+
+            // remove everything
+            for (var i=0; i<peanutsWhole.length; i++) {
+                peanutsWhole[i].remove();
+            }
+            for (var i=0; i<peanutsInd.length; i++) {
+                peanutsInd[i].remove();
+            }
+            for (var i=0; i<padawans.length; i++) {
+                padawans[i].remove();
+            }
+            for (var i=0; i<padawanParts.length; i++) {
+                padawanParts[i].remove();
+            }
+            peanutsWhole = [];
+            peanutsInd = [];
+            padawans = [];
+            padawanParts = [];
+
+            loseText.remove();
+            
+            gameOver = false;
+            gameStarted = true;
+        }
+        clicked = false;
+    }
+}
+
+function endScreen() 
+{
+    startText.fontSize = 30;
+    startView(false);
+    paper.view.draw();
+}
+
+function startScreen()
+{
+    titleText.fontSize = 60;
+    startText.fontSize = 30;
+    startView(false);
+    paper.view.draw();
+}
+
+function runGame() 
+{
+    if (!gameStarted) {
+        scoreText.fillColor = 'white';
+        highScoreText.fillColor = 'white';
+    }
+    else {
+        scoreText.fillColor = 'black';
+        highScoreText.fillColor = 'black';
+    }
+
+    if (!gameStarted) {
+        // not gameStarted
+        startScreen();
+    }
+    else if (!gameOver) {
+        // gameStarted and not gameOver
+        gameLoop();
+    }
+    else {
+        // gameStarted and gameOver
+        endScreen();
+    }
 }
 
 window.addEventListener('load', function() {
@@ -531,6 +627,29 @@ window.addEventListener('load', function() {
     highScoreText.fillColor = 'black';
     highScoreText.fontSize = 25;
     highScoreText.content = 'High Score: 0';
+
+
+    var topleft = new Point(view.bounds.right/2-200,view.bounds.bottom/2+100);
+    var bottomright = new Point(view.bounds.right/2+200,view.bounds.bottom/2+200);
+    startButton = new Rectangle(topleft,bottomright);
+    startButtonPath = new Path.Rectangle(startButton);    
+    startButtonPath.selected = false;
+
+    startText = new PointText(new Point(view.bounds.right / 2, view.bounds.bottom / 2+150));
+    startText.fillColor = 'blue';
+    startText.justification = 'center';
+    startText.fontFamily = 'Courier New';
+    startText.fontWeight = 'bold';
+    startText.content = 'Start';
+    startText.fontSize = 30;
+
+    titleText = new PointText(new Point(view.bounds.right / 2, view.bounds.bottom / 2-100));
+    titleText.fillColor = 'brown';
+    titleText.justification = 'center';
+    titleText.fontFamily = 'Courier New';
+    titleText.fontWeight = 'bold';
+    titleText.content = 'Peanut     \n      Jedi';
+    titleText.fontSize = 60;
     
     resetScore();
     resetLives();
@@ -541,6 +660,9 @@ window.addEventListener('load', function() {
     console.log(view.bounds.left);
     console.log(view.bounds.bottom);
     console.log(view.bounds.top);
+
+    mouseClick = new Point(0,0);
+    clicked = false;
   
     mouseTool.onMouseMove = function(event) {
         /* update mouse position */
@@ -548,10 +670,14 @@ window.addEventListener('load', function() {
         /* add to the length traveled */
         sumDelta = sumDelta + event.delta.length;
     }
+    mouseTool.onMouseUp = function(event) {
+        startView(true);
+    }
     
     gameOver = false;
+    gameStarted = false;
 
     /* time step for the game loop */
-    setInterval(gameLoop, 15);
+    setInterval(runGame, 15);
 
 });
