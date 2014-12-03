@@ -502,6 +502,25 @@ function loseGame()
     loseText.fontWeight = 'bold';
     loseText.content = 'YOU LOSE. WELCOME TO THE DARK SIDE.';
     loseText.fontSize = 40;
+
+    // remove everything
+    for (var i=0; i<peanutsWhole.length; i++) {
+        peanutsWhole[i].remove();
+    }
+    for (var i=0; i<peanutsInd.length; i++) {
+        peanutsInd[i].remove();
+    }
+    for (var i=0; i<padawans.length; i++) {
+        padawans[i].remove();
+    }
+    for (var i=0; i<padawanParts.length; i++) {
+        padawanParts[i].remove();
+    }
+    peanutsWhole = [];
+    peanutsInd = [];
+    padawans = [];
+    padawanParts = [];
+
     gameOver = true;
 }
 
@@ -528,24 +547,6 @@ function startView(clicked)
         else if (gameOver) {
             resetLives();
             resetScore();
-
-            // remove everything
-            for (var i=0; i<peanutsWhole.length; i++) {
-                peanutsWhole[i].remove();
-            }
-            for (var i=0; i<peanutsInd.length; i++) {
-                peanutsInd[i].remove();
-            }
-            for (var i=0; i<padawans.length; i++) {
-                padawans[i].remove();
-            }
-            for (var i=0; i<padawanParts.length; i++) {
-                padawanParts[i].remove();
-            }
-            peanutsWhole = [];
-            peanutsInd = [];
-            padawans = [];
-            padawanParts = [];
 
             loseText.remove();
             
@@ -640,7 +641,7 @@ window.addEventListener('load', function() {
     startText.justification = 'center';
     startText.fontFamily = 'Courier New';
     startText.fontWeight = 'bold';
-    startText.content = 'Start';
+    startText.content = 'Start Game';
     startText.fontSize = 30;
 
     titleText = new PointText(new Point(view.bounds.right / 2, view.bounds.bottom / 2-100));
